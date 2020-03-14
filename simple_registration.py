@@ -100,8 +100,8 @@ class SimpleRegistration():
         "save point cloud"
         dst = source + target
         basename_without_ext = os.path.splitext(os.path.basename(OUTPUT_PATH))[0]
-        o3d.io.write_point_cloud(basename_without_ext + "_dst.ply", dst)
-        return
+        o3d.io.write_point_cloud(basename_without_ext + "_coalition.ply", dst)
+        return dst
 
 class Simple3DFilter():
 
@@ -109,33 +109,43 @@ class Simple3DFilter():
         return
 
     def display_inlier_outlier(self, cloud, ind):
-    inlier_cloud = cloud.select_down_sample(ind)
-    outlier_cloud = cloud.select_down_sample(ind, invert=True)
-    print("Showing outliers (red) and inliers (gray): ")
-    outlier_cloud.paint_uniform_color([1, 0, 0])
-    inlier_cloud.paint_uniform_color([0.8, 0.8, 0.8])
-    o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
-    return
+        inlier_cloud = cloud.select_down_sample(ind)
+        outlier_cloud = cloud.select_down_sample(ind, invert=True)
+        print("Showing outliers (red) and inliers (gray): ")
+        outlier_cloud.paint_uniform_color([1, 0, 0])
+        inlier_cloud.paint_uniform_color([0.8, 0.8, 0.8])
+        o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
+        return
+
+    def save_3d(self, source, OUTPUT_PATH):
+        "save point cloud"
+        basename_without_ext = os.path.splitext(os.path.basename(OUTPUT_PATH))[0]
+        o3d.io.write_point_cloud(basename_without_ext + "_filterd.ply", source)
+        return
 
     def execute_uniform_down_sample(self, cloud):
-    print("Every 5th points are selected")
-    uni_down_pcd = cloud.uniform_down_sample(every_k_points=5)
-    o3d.visualization.draw_geometries([uni_down_pcd])
-    return
+        print("Every 5th points are selected")
+        uni_down_pcd = cloud.uniform_down_sample(every_k_points=5)
+        o3d.visualization.draw_geometries([uni_down_pcd])
+        return
 
-    def execute_remove_statistical_outlier(self, cloud):
-    print("Statistical oulier removal")
-    voxel_down_pcd = cloud.voxel_down_sample(voxel_size=0.02)
-    cl, ind = voxel_down_pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
-    self.display_inlier_outlier(voxel_down_pcd, ind)
-    return
+    def execute_remove_statistical_outlier(self, cloud, voxel_size=0.001):
+        print("Statistical oulier removal")
+        voxel_down_pcd = cloud.voxel_down_sample(voxel_size)
+        cl, ind = voxel_down_pcd.remove_statistical_outlier(nb_neighbors=50, std_ratio=1.0)
+        self.display_inlier_outlier(voxel_down_pcd, ind)
+        dst = voxel_down_pcd.select_down_sample(ind)
+        o3d.visualization.draw_geometries([dst])
+        return dst
 
-    def execute_remove_radius_outlier(self, cloud):
-    print("Radius oulier removal")
-    voxel_down_pcd = cloud.voxel_down_sample(voxel_size=0.02)
-    cl, ind = voxel_down_pcd.remove_radius_outlier(nb_points=16, radius=0.05)
-    self.display_inlier_outlier(voxel_down_pcd, ind)
-    return
+    def execute_remove_radius_outlier(self, cloud, voxel_size=0.001):
+        print("Radius oulier removal")
+        voxel_down_pcd = cloud.voxel_down_sample(voxel_size)
+        cl, ind = voxel_down_pcd.remove_radius_outlier(nb_points=16, radius=0.05)
+        self.display_inlier_outlier(voxel_down_pcd, ind)
+        dst = voxel_down_pcd.select_down_sample(ind)
+        o3d.visualization.draw_geometries([dst])
+        return dst
 
 
 if __name__ == "__main__":
@@ -154,14 +164,18 @@ if __name__ == "__main__":
     regist_source = SR.execute_global_registration(source, target)
     # execute refine registration
     icp_source = SR.execute_refine_registration(source, target)
+
     # draw
     SR.draw_3d(source, target)
 #    SR.draw_3d(regist_source, target)
     SR.draw_3d(icp_source, target)
-    # save
-    SR.save_coalition_3d(icp_source, target, SOURCE_PATH)
 
+    # save
+    merged_cloud = SR.save_coalition_3d(icp_source, target, TARGET_PATH)
+
+    # remove outlier
     S3DF = Simple3DFilter()
-    S3DF.execute_uniform_down_sample()
-    S3DF.execute_remove_statistical_outlier()
-    S3DF.execute_remove_radius_outlier()
+#    S3DF.execute_uniform_down_sample(icp_source)
+    statistical_cloud = S3DF.execute_remove_statistical_outlier(merged_cloud)
+#    radius_cloud = S3DF.execute_remove_radius_outlier(merged_cloud)
+    S3DF.save_3d(statistical_cloud, SOURCE_PATH)
