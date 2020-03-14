@@ -6,6 +6,8 @@ Point Cloud registration and outlier rejection using open3d.
 
 * [Edit by open3D](http://www.open3d.org/)
 
+* [Published on Sketchfab](https://skfb.ly/6QUqL)
+
 # Install
 
 ```bash
