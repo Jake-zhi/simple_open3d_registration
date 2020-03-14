@@ -107,7 +107,35 @@ class Simple3DFilter():
 
     def __init__(self):
         return
-    
+
+    def display_inlier_outlier(self, cloud, ind):
+    inlier_cloud = cloud.select_down_sample(ind)
+    outlier_cloud = cloud.select_down_sample(ind, invert=True)
+    print("Showing outliers (red) and inliers (gray): ")
+    outlier_cloud.paint_uniform_color([1, 0, 0])
+    inlier_cloud.paint_uniform_color([0.8, 0.8, 0.8])
+    o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
+    return
+
+    def execute_uniform_down_sample(self, cloud):
+    print("Every 5th points are selected")
+    uni_down_pcd = cloud.uniform_down_sample(every_k_points=5)
+    o3d.visualization.draw_geometries([uni_down_pcd])
+    return
+
+    def execute_remove_statistical_outlier(self, cloud):
+    print("Statistical oulier removal")
+    voxel_down_pcd = cloud.voxel_down_sample(voxel_size=0.02)
+    cl, ind = voxel_down_pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    self.display_inlier_outlier(voxel_down_pcd, ind)
+    return
+
+    def execute_remove_radius_outlier(self, cloud):
+    print("Radius oulier removal")
+    voxel_down_pcd = cloud.voxel_down_sample(voxel_size=0.02)
+    cl, ind = voxel_down_pcd.remove_radius_outlier(nb_points=16, radius=0.05)
+    self.display_inlier_outlier(voxel_down_pcd, ind)
+    return
 
 
 if __name__ == "__main__":
@@ -119,6 +147,7 @@ if __name__ == "__main__":
     print (SOURCE_PATH, TARGET_PATH)
 
     SR = SimpleRegistration()
+
     # read point clouds
     source, target = SR.read_point_clouds(SOURCE_PATH, TARGET_PATH)
     # execute global registration
@@ -131,3 +160,8 @@ if __name__ == "__main__":
     SR.draw_3d(icp_source, target)
     # save
     SR.save_coalition_3d(icp_source, target, SOURCE_PATH)
+
+    S3DF = Simple3DFilter()
+    S3DF.execute_uniform_down_sample()
+    S3DF.execute_remove_statistical_outlier()
+    S3DF.execute_remove_radius_outlier()
