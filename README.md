@@ -1,6 +1,10 @@
 # simple_open3d_registration
 
-Point Cloud registration and outlier rejection using open3d
+Point Cloud registration and outlier rejection using open3d.
+
+* [Captured by Capture 3D Scan Anything (Iphone XR)](https://apps.apple.com/app/capture-3d-scan-anything/id1444183458?ref=producthunt)
+
+* [Edit by open3D](http://www.open3d.org/)
 
 # Install
 
