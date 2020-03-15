@@ -147,6 +147,36 @@ class Simple3DFilter():
         o3d.visualization.draw_geometries([dst])
         return dst
 
+class SurfaceReconstruction():
+
+    def __init__(self, pcd):
+        print('run Poisson surface reconstruction')
+        self.mesh, self.densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=8)
+        self.o3d.visualization.draw_geometries([self.mesh])
+        return
+    
+    def visualize_densities(self):
+        print('visualize densities')
+        self.densities = np.asarray(self.densities)
+        import matplotlib.pyplot as plt
+        density_colors = plt.get_cmap('plasma')(
+                (self.densities - self.densities.min()) / (self.densities.max() - self.densities.min()))
+        density_colors = density_colors[:, :3]
+        density_mesh = o3d.geometry.TriangleMesh()
+        density_mesh.vertices = self.mesh.vertices
+        density_mesh.triangles = self.mesh.triangles
+        density_mesh.triangle_normals = self.mesh.triangle_normals
+        density_mesh.vertex_colors = o3d.utility.Vector3dVector(density_colors)
+        o3d.visualization.draw_geometries([density_mesh])
+        return
+    
+    def remove_low_density_vertices(self):
+        print('remove low density vertices')
+        vertices_to_remove = self.densities < np.quantile(self.densities, 0.1)
+        self.mesh.remove_vertices_by_mask(vertices_to_remove)
+        print(self.mesh)
+        o3d.visualization.draw_geometries([self.mesh])
+        return
 
 if __name__ == "__main__":
 
@@ -179,3 +209,8 @@ if __name__ == "__main__":
     statistical_cloud = S3DF.execute_remove_statistical_outlier(merged_cloud)
 #    radius_cloud = S3DF.execute_remove_radius_outlier(merged_cloud)
     S3DF.save_3d(statistical_cloud, SOURCE_PATH)
+
+    SFRC = SurfaceReconstruction(statistical_cloud)
+    SFRC.visualize_densities()
+    SFRC.remove_low_density_vertices()
+
