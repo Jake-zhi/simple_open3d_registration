@@ -149,10 +149,12 @@ class Simple3DFilter():
 
 class SurfaceReconstruction():
 
-    def __init__(self, pcd):
+    def __init__(self, pcd, OUTPUT_PATH):
         print('run Poisson surface reconstruction')
         self.mesh, self.densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=8)
-        self.o3d.visualization.draw_geometries([self.mesh])
+        o3d.visualization.draw_geometries([self.mesh])
+        basename_without_ext = os.path.splitext(os.path.basename(OUTPUT_PATH))[0]
+        o3d.io.write_triangle_mesh(basename_without_ext + "_surface_rec.ply", self.mesh)
         return
     
     def visualize_densities(self):
@@ -210,7 +212,7 @@ if __name__ == "__main__":
 #    radius_cloud = S3DF.execute_remove_radius_outlier(merged_cloud)
     S3DF.save_3d(statistical_cloud, SOURCE_PATH)
 
-    SFRC = SurfaceReconstruction(statistical_cloud)
+    SFRC = SurfaceReconstruction(statistical_cloud, TARGET_PATH)
     SFRC.visualize_densities()
-    SFRC.remove_low_density_vertices()
+    #SFRC.remove_low_density_vertices()
 
