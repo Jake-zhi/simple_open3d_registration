@@ -174,7 +174,8 @@ class SurfaceReconstruction():
     
     def remove_low_density_vertices(self):
         print('remove low density vertices')
-        vertices_to_remove = self.densities < np.quantile(self.densities, 0.1)
+        REMOVE_THRS = 0.1
+        vertices_to_remove = self.densities < np.quantile(self.densities, REMOVE_THRS)
         self.mesh.remove_vertices_by_mask(vertices_to_remove)
         print(self.mesh)
         o3d.visualization.draw_geometries([self.mesh])
@@ -212,7 +213,8 @@ if __name__ == "__main__":
 #    radius_cloud = S3DF.execute_remove_radius_outlier(merged_cloud)
     S3DF.save_3d(statistical_cloud, SOURCE_PATH)
 
+    # create_from_point_cloud_poisson
     SFRC = SurfaceReconstruction(statistical_cloud, TARGET_PATH)
     SFRC.visualize_densities()
-    #SFRC.remove_low_density_vertices()
+#    SFRC.remove_low_density_vertices()
 
