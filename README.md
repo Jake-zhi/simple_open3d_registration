@@ -34,3 +34,7 @@ python3 simple_registration.py ply/sample_gundum_01.ply ply/sample_gundum_02.ply
 |:---|:---|
 |![03_vis_outlier_Y](04_after_outlier_Y.png)|![04_after_outlier_normal](04_after_outlier_normal.png)|
 
+|05_surface_reconstruction|05_visualize_densities|
+|:---|:---|
+|![05_surface_reconstruction](05_surface_reconstruction.png)|![05_visualize_densities](05_visualize_densities.png)|
+
